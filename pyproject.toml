@@ -1,0 +1,23 @@
+[project]
+name = "function-call-graph"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Your Name",email = "you@example.com"}
+]
+license = {text = "GPL-2.0-only"}
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "networkx (>=3.5,<4.0)",
+    "angr (>=9.2.184,<10.0.0)",
+    "matplotlib (>=3.10.7,<4.0.0)",
+    "angr-utils (>=0.5.0,<0.6.0)",
+    "scipy (>=1.16.3,<2.0.0)",
+    "scipy-stubs[scipy] (>=1.16.3.3,<2.0.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
