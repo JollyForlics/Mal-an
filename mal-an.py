@@ -27,6 +27,17 @@ def print_function_call_graph(call_graph: nx.DiGraph, cfg: angr.analyses.CFGEmul
     plt.title("Function Call Graph (CFG Analysis)", size=15)
     plt.show()
 
+syscalls = []
+def log_sycalls(state):
+    syscall_name = state.inspect.syscall_name
+    syscall_sequence.append(syscall_name)
+    print(f"Executing Syscall: {syscall_name}")
+
+def get_sycall_graph(project: angr.Project):
+    intial_state: angr.SimState = project.factory.entry_state()
+    simulated: angr.SimulationManager = project.factory.simgr(initial_state)
+    initial_state.inspect('syscall', when=angr.BP_BEFORE, action=log_syscalls)
+
 def get_function_call_graph(cfg: angr.analyses.CFGEmulated):
     call_graph: nx.DiGraph = cfg.kb.functions.callgraph
     print_function_call_graph(call_graph, cfg);
