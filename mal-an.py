@@ -5,8 +5,6 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import sys
 
-
-
 def print_program_graph(project: angr.Project, fileName: str):
     main: cle.Symbol | None = project.loader.main_object.get_symbol("main");
     if main == None:
