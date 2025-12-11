@@ -15,28 +15,58 @@ def print_program_graph(project: angr.Project, fileName: str):
 
 def print_function_call_graph(call_graph: nx.DiGraph, cfg: angr.analyses.CFGEmulated):
     labels = {}
-    for addr in call_graph.nodes():
-        if addr in cfg.kb.functions:
-            labels[addr] = cfg.kb.functions[addr].name
+    for addrress in call_graph.nodes():
+        if addrress in cfg.kb.functions:
+            labels[addrress] = cfg.kb.functions[addrress].name
         else:
-            labels[addr] = f"Unknown_{hex(addr)}"
-    pos = nx.spring_layout(call_graph)
-    nx.draw_networkx_nodes(call_graph, pos, node_size=1000, node_color="#3498db")
-    nx.draw_networkx_edges(call_graph, pos, arrowstyle="-|>", arrowsize=20, edge_color="gray")
-    nx.draw_networkx_labels(call_graph, pos, labels, font_size=10, font_color="black")
+            labels[addrress] = f"Unknown_{hex(addrress)}"
+    position: dict = nx.spring_layout(call_graph)
+    nx.draw_networkx_nodes(call_graph, position, node_size=1000, node_color="#3498db")
+    nx.draw_networkx_edges(call_graph, position, arrowstyle="-|>", arrowsize=20, edge_color="gray")
+    nx.draw_networkx_labels(call_graph, position, labels, font_size=10, font_color="black")
     plt.title("Function Call Graph (CFG Analysis)", size=15)
     plt.show()
 
-syscalls = []
-def log_sycalls(state):
+syscall_sequence = []
+
+def log_syscalls(state):
+    print("Logging syscall")
+    print(f"State: {state}")
     syscall_name = state.inspect.syscall_name
     syscall_sequence.append(syscall_name)
-    print(f"Executing Syscall: {syscall_name}")
 
-def get_sycall_graph(project: angr.Project):
+def print_syscall_graph(graph: nx.DiGraph):
+    position: dict = nx.spring_layout(graph)
+    nx.draw_networkx_nodes(graph, position, node_size=1000, node_color="#3498db")
+    nx.draw_networkx_edges(graph, position, arrowstyle="-|>", arrowsize=20, edge_color="gray")
+    nx.draw_networkx_labels(graph, position, font_size=10, font_color="black")
+    plt.title("syscall graph", size=15)
+    plt.show()
+
+def get_syscall_graph(file: str):
+    project = angr.Project(file, load_options={'auto_load_libs': True})
     intial_state: angr.SimState = project.factory.entry_state()
-    simulated: angr.SimulationManager = project.factory.simgr(initial_state)
-    initial_state.inspect('syscall', when=angr.BP_BEFORE, action=log_syscalls)
+    intial_state.inspect.b('syscall', action=log_syscalls)
+    simulated: angr.SimulationManager = project.factory.simgr(intial_state)
+    simulated.run()
+
+    syscall_graph = nx.DiGraph()
+
+    for syscall in syscall_sequence:
+        if not syscall_graph.has_node(syscall):
+            syscall_graph.add_node(syscall)
+
+    for i in range(0, len(syscall_sequence) - 1):
+        u = syscall_sequence[i]
+        v = syscall_sequence[i + 1]
+
+        if syscall_graph.has_edge(u, v):
+            syscall_graph[u][v]["weight"] += 1
+        else:
+            syscall_graph.add_edge(u, v, weight=1)
+
+    print_syscall_graph(syscall_graph)
+    return(syscall_graph)
 
 def get_function_call_graph(cfg: angr.analyses.CFGEmulated):
     call_graph: nx.DiGraph = cfg.kb.functions.callgraph
@@ -50,11 +80,15 @@ def static_analysis(file1: str, file2: str):
     cfg1: angr.analyses.CFGEmulated = f1.analyses.CFGEmulated()
     cfg2: angr.analyses.CFGEmulated = f2.analyses.CFGEmulated()
 
-    fcg1 = get_function_call_graph(cfg1)
-    fcg2 = get_function_call_graph(cfg2)
+    fcg1: nx.DiGraph = get_function_call_graph(cfg1)
+    fcg2: nx.DiGraph = get_function_call_graph(cfg2)
+
+    sc1: nx.DiGraph = get_syscall_graph(file1)
+    sc2: nx.DiGraph = get_syscall_graph(file2)
 
     print(nx.is_isomorphic(cfg1.model.graph, cfg2.model.graph))
     print(nx.is_isomorphic(fcg1, fcg2))
+    print(nx.is_isomorphic(sc1, sc2))
 
 def main():
     if (len(sys.argv) != 3):
