@@ -16,5 +16,6 @@ Currently it uses isomorphism. I tried graph edit distance but that took to much
 4. `matplotlib`: For plotting graph
 
 ```python
+poetry install
 python mal-an.py <file1> <file2>
 ```
