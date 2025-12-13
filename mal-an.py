@@ -88,7 +88,7 @@ def static_analysis(file1: str, file2: str, opts: list[str]):
     print(nx.is_isomorphic(fcg1, fcg2))
     print(nx.is_isomorphic(sc1, sc2))
 
-    if (len(opts) >= 0):
+    if (len(opts) > 0):
         if ('cfg' in opts):
             print_program_graph(f1, "cfg-f1")
             print_program_graph(f2, "cfg-f2")
