@@ -84,8 +84,6 @@ def get_syscall_graph(file: str):
     for i in range(0, len(syscall_sequence) - 1):
         u = syscall_sequence[i]
         v = syscall_sequence[i + 1]
-        if (u == v):
-           continue
 
         if syscall_graph.has_edge(u, v):
             syscall_graph[u][v]["weight"] += 1
@@ -115,6 +113,10 @@ def static_analysis(file1: str, file2: str, opts: list[str]):
     print(nx.is_isomorphic(cfg1.model.graph, cfg2.model.graph))
     print(nx.is_isomorphic(fcg1, fcg2))
     print(nx.is_isomorphic(sc1, sc2))
+
+    print("Edit path test")
+    print(nx.graph_edit_distance(fcg1, fcg2))
+    print(nx.graph_edit_distance(sc1, sc2))
 
     if (len(opts) > 0):
         if ('cfg' in opts):
