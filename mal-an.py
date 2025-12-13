@@ -88,20 +88,21 @@ def static_analysis(file1: str, file2: str, opts: list[str]):
     print(nx.is_isomorphic(fcg1, fcg2))
     print(nx.is_isomorphic(sc1, sc2))
 
-    if ('cfg' in opts):
-        print_program_graph(f1, "cfg-f1")
-        print_program_graph(f2, "cfg-f2")
-    if ('fcs' in opts):
-        print_function_call_graph(fcg1, cfg1)
-        print_function_call_graph(fcg2, cfg2)
-    if ('syscall' in opts):
-        print_syscall_graph(sc1)
-        print_syscall_graph(sc2)
+    if (len(opts) >= 0):
+        if ('cfg' in opts):
+            print_program_graph(f1, "cfg-f1")
+            print_program_graph(f2, "cfg-f2")
+        if ('fcs' in opts):
+            print_function_call_graph(fcg1, cfg1)
+            print_function_call_graph(fcg2, cfg2)
+        if ('syscall' in opts):
+            print_syscall_graph(sc1)
+            print_syscall_graph(sc2)
 
 
 
 def main():
-    if (len(sys.argv) <= 3):
+    if (len(sys.argv) < 3):
         print("Usage: ./mal-ana file2 file2")
         sys.exit(-2)
     static_analysis(sys.argv[1], sys.argv[2], sys.argv[3:])
