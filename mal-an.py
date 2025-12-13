@@ -75,8 +75,24 @@ def get_syscall_graph(file: str):
 
     syscall_sequence = get_syscalls(command_stdout)
 
+    syscall_graph = nx.DiGraph()
 
-    return nx.DiGraph()
+    for syscall in syscall_sequence:
+        if not syscall_graph.has_node(syscall):
+            syscall_graph.add_node(syscall)
+
+    for i in range(0, len(syscall_sequence) - 1):
+        u = syscall_sequence[i]
+        v = syscall_sequence[i + 1]
+        if (u == v):
+           continue
+
+        if syscall_graph.has_edge(u, v):
+            syscall_graph[u][v]["weight"] += 1
+        else:
+            syscall_graph.add_edge(u, v, weight=1)
+
+    return(syscall_graph)
 
 def get_function_call_graph(cfg: angr.analyses.CFGEmulated):
     call_graph: nx.DiGraph = cfg.kb.functions.callgraph
@@ -95,6 +111,7 @@ def static_analysis(file1: str, file2: str, opts: list[str]):
     sc1: nx.DiGraph = get_syscall_graph(file1)
     sc2: nx.DiGraph = get_syscall_graph(file2)
 
+    print("Isomorphism test")
     print(nx.is_isomorphic(cfg1.model.graph, cfg2.model.graph))
     print(nx.is_isomorphic(fcg1, fcg2))
     print(nx.is_isomorphic(sc1, sc2))
