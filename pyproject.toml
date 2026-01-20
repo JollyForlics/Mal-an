@@ -15,6 +15,7 @@ dependencies = [
     "angr-utils (>=0.5.0,<0.6.0)",
     "scipy (>=1.16.3,<2.0.0)",
     "scipy-stubs[scipy] (>=1.16.3.3,<2.0.0.0)",
+    "pyqt6 (>=6.10.2,<7.0.0)",
 ]
 
 [tool.poetry]

@@ -95,6 +95,13 @@ def get_function_call_graph(cfg: angr.analyses.CFGEmulated):
     call_graph: nx.DiGraph = cfg.kb.functions.callgraph
     return(call_graph)
 
+def node_match(node1: dict, node2: dict):
+    if (node1 == node2):
+        return True;
+    return False;
+
+
+
 def static_analysis(file1: str, file2: str, opts: list[str]):
     f1: angr.Project = angr.Project(file1, load_options={'auto_load_libs': False})
     f2: angr.Project = angr.Project(file2, load_options={'auto_load_libs': False})
@@ -114,7 +121,7 @@ def static_analysis(file1: str, file2: str, opts: list[str]):
     print("FCG isomorphism")
     print(nx.is_isomorphic(fcg1, fcg2))
     print("syscall isomorphism")
-    print(nx.is_isomorphic(sc1, sc2))
+    print(nx.is_isomorphic(sc1, sc2, node_match))
 
     print("Edit path test")
     print("FCG edit distance")
@@ -132,8 +139,6 @@ def static_analysis(file1: str, file2: str, opts: list[str]):
         if ('syscall' in opts):
             print_syscall_graph(sc1)
             print_syscall_graph(sc2)
-
-
 
 def main():
     if (len(sys.argv) < 3):
