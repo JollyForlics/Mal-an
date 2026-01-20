@@ -63,7 +63,6 @@ def get_syscalls(stdout: str):
     return(syscall_sequence)
 
 def get_syscall_graph(file: str):
-
     strace_command = ['strace', '-f', '-v', file]
     result = subprocess.run(
             strace_command,
