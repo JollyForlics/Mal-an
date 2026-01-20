@@ -37,13 +37,13 @@ def print_syscall_graph(graph: nx.DiGraph):
     plt.show()
 
 def get_syscalls(stdout: str):
-    syscalls_of_interest = [
-        'recvfrom', 'write', 'ioctl', 'read', 'sendto', 'dup', 
-        'writev', 'pread', 'close', 'socket', 'bind', 'connect', 
-        'mkdir', 'access', 'chmod', 'open', 'rename', 'fchown32', 
-        'unlink', 'pwrite', 'unmask', 'lseek', 'fcntl', 'recvmsg', 
-        'sendmsg', 'epoll', 'dup2', 'fchown', 'readv', 'chdir'
-    ]
+    # syscalls_of_interest = [
+    #     'recvfrom', 'write', 'ioctl', 'read', 'sendto', 'dup', 
+    #     'writev', 'pread', 'close', 'socket', 'bind', 'connect', 
+    #     'mkdir', 'access', 'chmod', 'open', 'rename', 'fchown32', 
+    #     'unlink', 'pwrite', 'unmask', 'lseek', 'fcntl', 'recvmsg', 
+    #     'sendmsg', 'epoll', 'dup2', 'fchown', 'readv', 'chdir'
+    # ]
     syscall_sequence = []
     
     line_idx: int = 0
@@ -56,9 +56,9 @@ def get_syscalls(stdout: str):
         while event[char_idx] != '(':
             new_syscall += event[char_idx]
             char_idx += 1
-        if (new_syscall in syscalls_of_interest):
-            print(new_syscall)
-            syscall_sequence.append(new_syscall)
+        # if (new_syscall in syscalls_of_interest):
+        #     syscall_sequence.append(new_syscall)
+        syscall_sequence.append(new_syscall)
         line_idx+=1
     return(syscall_sequence)
 
@@ -109,19 +109,24 @@ def static_analysis(file1: str, file2: str, opts: list[str]):
     sc2: nx.DiGraph = get_syscall_graph(file2)
 
     print("Isomorphism test")
+    print("CFG isomorphism")
     print(nx.is_isomorphic(cfg1.model.graph, cfg2.model.graph))
+    print("FCG isomorphism")
     print(nx.is_isomorphic(fcg1, fcg2))
+    print("syscall isomorphism")
     print(nx.is_isomorphic(sc1, sc2))
 
     print("Edit path test")
+    print("FCG edit distance")
     print(nx.graph_edit_distance(fcg1, fcg2))
+    print("syscall edit distance")
     print(nx.graph_edit_distance(sc1, sc2))
 
     if (len(opts) > 0):
         if ('cfg' in opts):
             print_program_graph(f1, "cfg-f1")
             print_program_graph(f2, "cfg-f2")
-        if ('fcs' in opts):
+        if ('fcg' in opts):
             print_function_call_graph(fcg1, cfg1)
             print_function_call_graph(fcg2, cfg2)
         if ('syscall' in opts):

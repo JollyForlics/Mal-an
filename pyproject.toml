@@ -17,6 +17,9 @@ dependencies = [
     "scipy-stubs[scipy] (>=1.16.3.3,<2.0.0.0)",
 ]
 
+[tool.poetry]
+package-mode = false
+
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
