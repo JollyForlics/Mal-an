@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import subprocess
 import sys
+from PIL import Image
+
 
 def print_program_graph(project: angr.Project, fileName: str):
     main: cle.Symbol | None = project.loader.main_object.get_symbol("main");
@@ -13,6 +15,7 @@ def print_program_graph(project: angr.Project, fileName: str):
 
     cfg: angr.analyses.CFGEmulated = project.analyses.CFGEmulated();
     plot_cfg(cfg, fileName);
+    Image.open(fileName, mode="r") 
 
 def print_function_call_graph(call_graph: nx.DiGraph, cfg: angr.analyses.CFGEmulated):
     labels = {}
@@ -21,7 +24,7 @@ def print_function_call_graph(call_graph: nx.DiGraph, cfg: angr.analyses.CFGEmul
             labels[addrress] = cfg.kb.functions[addrress].name
         else:
             labels[addrress] = f"Unknown_{hex(addrress)}"
-    position: dict = nx.spring_layout(call_graph)
+    position: dict = nx.spring_layout(call_graph, k=1, iterations=20)
     nx.draw_networkx_nodes(call_graph, position, node_size=1000, node_color="#3498db")
     nx.draw_networkx_edges(call_graph, position, arrowstyle="-|>", arrowsize=20, edge_color="gray")
     nx.draw_networkx_labels(call_graph, position, labels, font_size=10, font_color="black")
@@ -29,21 +32,23 @@ def print_function_call_graph(call_graph: nx.DiGraph, cfg: angr.analyses.CFGEmul
     plt.show()
 
 def print_syscall_graph(graph: nx.DiGraph):
-    position: dict = nx.spring_layout(graph)
+    position: dict = nx.spring_layout(graph, k=1, iterations=20)
     nx.draw_networkx_nodes(graph, position, node_size=1000, node_color="#3498db")
     nx.draw_networkx_edges(graph, position, arrowstyle="-|>", arrowsize=20, edge_color="gray")
     nx.draw_networkx_labels(graph, position, font_size=10, font_color="black")
+    edge_labels: dict = nx.get_edge_attributes(graph, "weight")
+    nx.draw_networkx_edge_labels(graph, position, edge_labels)
     plt.title("syscall graph", size=15)
     plt.show()
 
 def get_syscalls(stdout: str):
-    # syscalls_of_interest = [
-    #     'recvfrom', 'write', 'ioctl', 'read', 'sendto', 'dup', 
-    #     'writev', 'pread', 'close', 'socket', 'bind', 'connect', 
-    #     'mkdir', 'access', 'chmod', 'open', 'rename', 'fchown32', 
-    #     'unlink', 'pwrite', 'unmask', 'lseek', 'fcntl', 'recvmsg', 
-    #     'sendmsg', 'epoll', 'dup2', 'fchown', 'readv', 'chdir'
-    # ]
+    syscalls_of_interest = [
+        'recvfrom', 'write', 'ioctl', 'read', 'sendto', 'dup', 
+        'writev', 'pread', 'close', 'socket', 'bind', 'connect', 
+        'mkdir', 'access', 'chmod', 'open', 'rename', 'fchown32', 
+        'unlink', 'pwrite', 'unmask', 'lseek', 'fcntl', 'recvmsg', 
+        'sendmsg', 'epoll', 'dup2', 'fchown', 'readv', 'chdir'
+    ]
     syscall_sequence = []
     
     line_idx: int = 0
@@ -56,8 +61,8 @@ def get_syscalls(stdout: str):
         while event[char_idx] != '(':
             new_syscall += event[char_idx]
             char_idx += 1
-        # if (new_syscall in syscalls_of_interest):
-        #     syscall_sequence.append(new_syscall)
+        if (new_syscall in syscalls_of_interest):
+            syscall_sequence.append(new_syscall)
         syscall_sequence.append(new_syscall)
         line_idx+=1
     return(syscall_sequence)
@@ -118,16 +123,21 @@ def static_analysis(file1: str, file2: str, opts: list[str]):
     print("Isomorphism test")
     print("CFG isomorphism")
     print(nx.is_isomorphic(cfg1.model.graph, cfg2.model.graph))
+    print('\n')
     print("FCG isomorphism")
     print(nx.is_isomorphic(fcg1, fcg2))
+    print('\n')
     print("syscall isomorphism")
     print(nx.is_isomorphic(sc1, sc2, node_match))
+    print('\n')
 
     print("Edit path test")
     print("FCG edit distance")
     print(nx.graph_edit_distance(fcg1, fcg2))
+    print('\n')
     print("syscall edit distance")
     print(nx.graph_edit_distance(sc1, sc2))
+    print('\n')
 
     if (len(opts) > 0):
         if ('cfg' in opts):
